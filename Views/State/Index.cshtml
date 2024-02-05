@@ -1,0 +1,47 @@
+﻿@model IEnumerable<StoreMySql.Models.State>
+
+@{
+    ViewData["Title"] = "States";
+}
+
+<h1>States</h1>
+
+<p>
+    <a asp-action="Create">
+        <img src="~/image/plus-square.svg" />
+    </a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Initials)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Initials)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.IdState">
+                        <img src="~/image/pencil-square.svg" />
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.IdState">
+                        <img src="~/image/trash3.svg" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

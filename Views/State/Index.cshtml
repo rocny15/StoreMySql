@@ -37,7 +37,7 @@
                     <a asp-action="Edit" asp-route-id="@item.IdState">
                         <img src="~/image/pencil-square.svg" />
                     </a>
-                    <a asp-action="Delete" asp-route-id="@item.IdState">
+                    <a asp-action="Delete" asp-route-id="@item.IdState" onclick="return confirmarEliminacion()">
                         <img src="~/image/trash3.svg" />
                     </a>
                 </td>
@@ -45,3 +45,11 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        function confirmarEliminacion() {
+            return confirm('¿Estás seguro de que deseas eliminar este estado?');
+        }
+    </script>
+}

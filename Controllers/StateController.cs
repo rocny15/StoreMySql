@@ -187,5 +187,42 @@ namespace StoreMySql.Controllers
             return View(updatedState);
         }
 
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                {
+                    await connection.OpenAsync();
+
+                    string deleteQuery = "DELETE FROM states WHERE id_state = @Id";
+                    using (MySqlCommand deleteCommand = new MySqlCommand(deleteQuery, connection))
+                    {
+                        deleteCommand.Parameters.AddWithValue("@Id", id);
+
+                        int rowsAffected = deleteCommand.ExecuteNonQuery();
+
+                        if (rowsAffected > 0)
+                        {
+                            return RedirectToAction("Index"); 
+                        }
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                }
+            }
+            catch (MySqlException ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error durante la eliminación del estado. Por favor, inténtalo de nuevo más tarde.";
+                return RedirectToAction("Index");  
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error desconocido durante la eliminación del estado. Por favor, inténtalo de nuevo más tarde.";
+                return RedirectToAction("Index"); 
+            }
+        }
     }
 }

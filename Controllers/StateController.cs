@@ -81,11 +81,111 @@ namespace StoreMySql.Controllers
                 }
             }
             catch (Exception ex)
-            { 
+            {
                 ModelState.AddModelError("", "Ocurrió un error durante la creación del estado.");
             }
 
             return View(state);
         }
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            var state = new State();
+            if (id == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                {
+                    await connection.OpenAsync();  // Asegurarse de que la conexión sea asincrónica
+
+                    string query = "SELECT * FROM states WHERE id_state = @Id";
+                    using (MySqlCommand command = new MySqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Id", id);
+                        using (MySqlDataReader reader = command.ExecuteReader())
+                        {
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    state.IdState = reader.GetInt32("id_state");
+                                    state.Name = reader.GetString("name");
+                                    state.Initials = reader.GetString("initials");
+                                }
+                            }
+                        }
+                    }
+                }
+                if (state == null)
+                {
+                    return NotFound();
+                }
+
+                return View(state);
+            }
+            catch (MySqlException ex)
+            { 
+                ModelState.AddModelError("", "Ocurrió un error durante la edición del estado. Por favor, inténtalo de nuevo más tarde.");
+                return View(state);  
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Ocurrió un error desconocido durante la edición del estado. Por favor, inténtalo de nuevo más tarde.");
+                return View(state); 
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, State updatedState)
+        {
+            if (id != updatedState.IdState)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    using (MySqlConnection connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                    {
+                        await connection.OpenAsync();
+
+                        string updateQuery = "UPDATE states SET name = @Name, initials = @Initials WHERE id_state = @Id";
+                        using (MySqlCommand updateCommand = new MySqlCommand(updateQuery, connection))
+                        {
+                            updateCommand.Parameters.AddWithValue("@Id", updatedState.IdState);
+                            updateCommand.Parameters.AddWithValue("@Name", updatedState.Name);
+                            updateCommand.Parameters.AddWithValue("@Initials", updatedState.Initials);
+
+                            int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                            if (rowsAffected > 0)
+                            {
+                                return RedirectToAction("Index"); 
+                            }
+                            else
+                            {
+                                return NotFound();
+                            }
+                        }
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    ModelState.AddModelError("", "Ocurrió un error durante la actualización del estado. Por favor, inténtalo de nuevo más tarde.");
+                }
+                catch (Exception ex)
+                { 
+                    ModelState.AddModelError("", "Ocurrió un error desconocido durante la actualización del estado. Por favor, inténtalo de nuevo más tarde.");
+                }
+            }
+            return View(updatedState);
+        }
+
     }
 }
